@@ -215,7 +215,7 @@ sudo chown et:et $DOMA/start.sh
 sudo chmod a+x $DOMA/start.sh
 
 # Add crontab entries
-(crontab -u et -l ; echo "#0 6 * * * kill \$(pidof $GAME_DIR/etlded.x86_64)") | crontab -u et -
+(crontab -u et -l ; echo "0 6 * * * kill \$(pidof $GAME_DIR/etlded.x86_64)") | crontab -u et -
 (crontab -u et -l ; echo "@reboot /bin/bash $DOMA/start.sh >/dev/null 2>&1") | crontab -u et -
 
 sudo chmod a+x $GAME_DIR/etlded.x86_64
