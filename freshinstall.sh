@@ -74,13 +74,13 @@ chmod 700 "$LEGACY_DIR"
 chown -R et:et "$DOMA"
 
 # Download server configs
-sudo -u et curl -sSfL "https://pastebin.com/raw/aWXZXqhe" -o "$ETMAIN_DIR/aim.cfg"
+sudo -u et curl -sSfL "https://raw.githubusercontent.com/iamez/freshinstall/main/aim.cfg" -o "$ETMAIN_DIR/aim.cfg"
 chown et:et "$ETMAIN_DIR/aim.cfg"
 chmod 700 "$ETMAIN_DIR/aim.cfg"
-sudo -u et curl -sSfL "https://pastebin.com/raw/NYKrrJSm" -o "$CONFIG_DIR/aim.config"
+sudo -u et curl -sSfL "https://raw.githubusercontent.com/iamez/freshinstall/main/aim.config" -o "$CONFIG_DIR/aim.config"
 chown et:et "$CONFIG_DIR/aim.config"
 chmod 700 "$CONFIG_DIR/aim.config"
-sudo -u et curl -sSfL "https://pastebin.com/raw/HfTVcmYj" -o "$ETMAIN_DIR/vektor.cfg"
+sudo -u et curl -sSfL "https://raw.githubusercontent.com/iamez/freshinstall/main/vektor.cfg" -o "$ETMAIN_DIR/vektor.cfg"
 chown et:et "$ETMAIN_DIR/vektor.cfg"
 chmod 700 "$ETMAIN_DIR/vektor.cfg"
 echo "Custom configs have been successfully downloaded and installed."
@@ -116,7 +116,7 @@ sudo chmod a+x "$ABS_LUA_FILE"
 
 # Download etdaemon.sh and move it to the game directory
 #curl https://pastebin.com/raw/DRSC5FSs > "$GAME_DIR/etdaemon.sh"
-curl https://pastebin.com/raw/mBsxvCzT > "$GAME_DIR/etdaemon.sh"
+curl https://raw.githubusercontent.com/iamez/freshinstall/main/etdaemon.sh > "$GAME_DIR/etdaemon.sh"
 
 echo "The etdaemon.sh script has been successfully downloaded to $GAME_DIR."
 
@@ -180,8 +180,18 @@ files=(
     "UseMeJump.pk3"
 )
 
+num_downloaded=0
+num_skipped=0
+num_failed=0
+
 for file in "${files[@]}"
 do
+    if [ -e "${ETMAIN_DIR}/${file}" ]; then
+        echo "${file} already exists in ${ETMAIN_DIR} and will be skipped"
+        ((num_skipped++))
+        continue
+    fi
+
     downloaded=false
     for link in \
         "http://download.hirntot.org/etmain/${file}" \
@@ -191,17 +201,21 @@ do
     do
         if sudo wget -q "$link" -O "$ETMAIN_DIR/${file}"; then
             downloaded=true
+            ((num_downloaded++))
             break
         fi
     done
     if ! $downloaded; then
         echo "${file} not found and skipped"
+        ((num_failed++))
         continue
     fi
     sudo chown et:et "${ETMAIN_DIR}/${file}"
     sudo chmod 700 "${ETMAIN_DIR}/${file}"
-    echo "${file} downloaded and added to ${ETMAIN_DIR}"
 done
+
+echo "Downloaded ${num_downloaded} files. Skipped ${num_skipped} files that already exist. Failed to download ${num_failed} files"
+
 
 # Create the start.sh script
 cat << EOF > $DOMA/start.sh
@@ -228,9 +242,6 @@ sudo chown et:et /home/et/start_servers.log
 echo "Attempting to start the servers..."
 su - et -s /bin/bash -c "cd /home/et/etlegacy-v2.81.1-x86_64 && dos2unix etdaemon.sh && ./etdaemon.sh" &
 
-
-
-#sudo -u et /bin/bash $DOMA/start.sh
 echo "ssh will now restart on port 48101"
 sleep 1 
 echo "....."
