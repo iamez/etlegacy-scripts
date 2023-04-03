@@ -33,14 +33,6 @@ check_and_restart_servers() {
     done
 }
 
-# Kill the servers at 6am every day
-if [ "$(date +%H:%M)" == "06:00" ]; then
-    echo "$(date '+%H:%M:%S') Killing servers..." >> /home/et/start_servers.log
-    screen -S aim -X quit
-    screen -S vektor -X quit
-    exit 0
-fi
-
 # Start the servers if they are not running
 if ! screen -ls | grep -q "vektor"; then
     start_servers
