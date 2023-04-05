@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to the game server directory
-GAME_DIR="/home/et/etlegacy-v2.81.1-x86_64"
+GAME_DIR=""
 
 # Function to start servers
 start_servers() {
