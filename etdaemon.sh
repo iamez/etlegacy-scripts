@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to the game server directory
-GAME_DIR=""
+GAME_DIR="/home/et/etlegacy-v2.81.1-x86_64"
 
 # Function to start servers
 start_servers() {
@@ -33,23 +33,6 @@ check_and_restart_servers() {
     done
 }
 
-# Start the servers if they are not running
-if ! screen -ls | grep -q "vektor"; then
-    start_servers
-elif ! screen -ls | grep -q "aim"; then
-    start_servers
-else
-    check_and_restart_servers
-fi
-
-# Keep running indefinitely
 while true; do
-    sleep 5m
-    if ! screen -ls | grep -q "vektor"; then
-        start_servers
-    elif ! screen -ls | grep -q "aim"; then
-        start_servers
-    else
-        check_and_restart_servers
-    fi
+    check_and_restart_servers
 done
