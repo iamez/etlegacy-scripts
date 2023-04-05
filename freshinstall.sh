@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#Script that will install two servers into screen "aim" and "vektor"
+#servers are preconfigured to my personal servers, one scrim/match server and one warmup/practice server
+#match server configuration by vektor
+
+
 DOMA="/home/et"
 GAME_DIR="/home/et/etlegacy-v2.81.1-x86_64"
 ETMAIN_DIR="/home/et/etlegacy-v2.81.1-x86_64/etmain"
@@ -62,9 +67,7 @@ sudo unzip -q "/tmp/main.zip" -d "/tmp/"
 sudo cp -r "/tmp/Legacy-Competition-League-Configs-main/*" "$ETMAIN_DIR"
 sudo chown -R et:et "$ETMAIN_DIR"
 sudo chmod -R 700 "$ETMAIN_DIR"
-
-# Clean up the temporary files
-sudo rm -rf "/tmp/et_legacy_competitive_configs.zip" "/tmp/Legacy-Competition-League-Configs-main" "/tmp/Legacy-Competition-League-Configs" "/tmp/main.zip" "$ETMAIN_DIR/Legacy-Competition-League-Configs*"
+sudo rm -rf "/tmp/Legacy-Competition-League-Configs-main"
 
 # Additional commands to set ownership and permissions for the server
 chown -R et:et "$CONFIG_DIR"
@@ -86,7 +89,7 @@ chmod 700 "$ETMAIN_DIR/vektor.cfg"
 echo "Custom configs have been successfully downloaded and installed."
 
 
-# Create the abs1.3.lua script
+# Create the abs1.3.lua script for aim server
 ABS_LUA_FILE="${LEGACY_DIR}/abs1.3.lua"
 echo 'local version = 1.3
 local modname = "abs"
@@ -115,21 +118,10 @@ sudo chmod a+x "$ABS_LUA_FILE"
 
 
 # Download etdaemon.sh and move it to the game directory
-#curl https://pastebin.com/raw/DRSC5FSs > "$GAME_DIR/etdaemon.sh"
 curl https://raw.githubusercontent.com/iamez/freshinstall/main/etdaemon.sh > "$GAME_DIR/etdaemon.sh"
-
-echo "The etdaemon.sh script has been successfully downloaded to $GAME_DIR."
-
-# Set the correct file permissions for the scripts
 chmod a+x "$GAME_DIR/etdaemon.sh"
 chmod a+x "$ABS_LUA_FILE"
-chown et:et "$GAME_DIR/etdaemon.sh" "$LEGACY_DIR"
-echo "File permissions have been successfully set."
-
-
-#properly sets-up etdaemon.sh to work by pointing it to the "real" $GAME_DIR
-#sed -i "s#^GAME_DIR=\".*\"#GAME_DIR=\"$GAME_DIR\"#" "$GAME_DIR/etdaemon.sh"
-#sed -i -e 's#^GAME_DIR=".*"#GAME_DIR="$GAME_DIR"#' -e 's/\r//' "$GAME_DIR/etdaemon.sh"
+chown et:et "$GAME_DIR/etdaemon.sh"
 sed -i -e "s#^GAME_DIR=\".*\"#GAME_DIR=\"$GAME_DIR\"#" -e 's/\r//' "$GAME_DIR/etdaemon.sh"
 
 
@@ -216,13 +208,12 @@ done
 
 echo "Downloaded ${num_downloaded} files. Skipped ${num_skipped} files that already exist. Failed to download ${num_failed} files"
 
-
 # Create the start.sh script
 cat << EOF > $DOMA/start.sh
 #!/bin/bash
 sleep 10
 cd $GAME_DIR
-bash etdaemon.sh
+bash etdaemon.sh &
 EOF
 # Set permissions for start.sh
 sudo chown et:et $DOMA/start.sh
@@ -236,15 +227,8 @@ sudo chmod a+x $GAME_DIR/etlded.x86_64
 sudo touch /home/et/start_servers.log
 sudo chown et:et /home/et/start_servers.log
 
-#sudo reboot #Hardcore way to check if damon working
-
 # Start the server
-echo "Attempting to start the servers..."
 su - et -s /bin/bash -c "cd /home/et/etlegacy-v2.81.1-x86_64 && dos2unix etdaemon.sh && ./etdaemon.sh" &
-
 echo "ssh will now restart on port 48101"
-sleep 1 
-echo "....."
-sleep 1
 echo "SSH will now restart and open on 48101 port. Server IP address(es): $(hostname -I)"
 sudo systemctl restart sshd.service
