@@ -51,7 +51,7 @@ sudo chown et:et /home/et/etlegacy-v2.81.1-x86_64.sh
 sudo chmod a+x /home/et/etlegacy-v2.81.1-x86_64.sh
 
 # Install dependencies necessary to run the latest legacy version
-sudo apt-get install unzip screen dos2unix libstdc++6 libcurl4-gnutls-dev libjpeg-dev libogg-dev libvorbis-dev libopenal-dev libssl-dev libgtk2.0-dev -y
+sudo apt-get install sudo curl unzip screen dos2unix libstdc++6 libcurl4-gnutls-dev libjpeg-dev libogg-dev libvorbis-dev libopenal-dev libssl-dev libgtk2.0-dev -y
 
 
 #install the server using defaults and as ET user
@@ -64,7 +64,7 @@ sudo chmod -R 700 /home/et/etlegacy-v2.81.1-x86_64/
 # Download competitive configs from ET: Legacy Competitive GitHub repository Extract the contents of the archive Copy the contents to $ETMAIN_DIR
 sudo wget -q "https://github.com/ET-Legacy-Competitive/Legacy-Competition-League-Configs/archive/main.zip" -O "/tmp/main.zip"
 sudo unzip -q "/tmp/main.zip" -d "/tmp/"
-sudo cp -r "/tmp/Legacy-Competition-League-Configs-main/*" "$ETMAIN_DIR"
+sudo cp -r "/tmp/Legacy-Competition-League-Configs-main/" "$ETMAIN_DIR"
 sudo chown -R et:et "$ETMAIN_DIR"
 sudo chmod -R 700 "$ETMAIN_DIR"
 sudo rm -rf "/tmp/Legacy-Competition-League-Configs-main"
