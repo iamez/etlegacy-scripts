@@ -51,7 +51,7 @@ sudo chown et:et /home/et/etlegacy-v2.81.1-x86_64.sh
 sudo chmod a+x /home/et/etlegacy-v2.81.1-x86_64.sh
 
 # Install dependencies necessary to run the latest legacy version
-sudo apt-get install sudo curl unzip screen dos2unix libstdc++6 libcurl4-gnutls-dev libjpeg-dev libogg-dev libvorbis-dev libopenal-dev libssl-dev libgtk2.0-dev -y
+sudo apt-get install sudo openssh-server curl unzip screen dos2unix libstdc++6 libcurl4-gnutls-dev libjpeg-dev libogg-dev libvorbis-dev libopenal-dev libssl-dev libgtk2.0-dev -y
 
 
 #install the server using defaults and as ET user
