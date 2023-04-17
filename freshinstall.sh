@@ -64,7 +64,7 @@ sudo chmod -R 700 /home/et/etlegacy-v2.81.1-x86_64/
 # Download competitive configs from ET: Legacy Competitive GitHub repository Extract the contents of the archive Copy the contents to $ETMAIN_DIR
 sudo wget -q "https://github.com/ET-Legacy-Competitive/Legacy-Competition-League-Configs/archive/main.zip" -O "/tmp/main.zip"
 sudo unzip -q "/tmp/main.zip" -d "/tmp/"
-sudo cp -r "/tmp/Legacy-Competition-League-Configs-main/" "$ETMAIN_DIR"
+sudo cp -r "/tmp/Legacy-Competition-League-Configs-main/*" "$ETMAIN_DIR/"
 sudo chown -R et:et "$ETMAIN_DIR"
 sudo chmod -R 700 "$ETMAIN_DIR"
 sudo rm -rf "/tmp/Legacy-Competition-League-Configs-main"
