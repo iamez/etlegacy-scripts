@@ -16,6 +16,9 @@ LEGACY_DIR="/home/et/etlegacy-v2.81.1-x86_64/legacy"
 sudo apt-get update
 sudo apt-get upgrade -y
 
+# Install dependencies necessary to run the latest legacy version
+sudo apt-get install sudo openssh-server curl unzip screen dos2unix libstdc++6 libcurl4-gnutls-dev libjpeg-dev libogg-dev libvorbis-dev libopenal-dev libssl-dev libgtk2.0-dev -y
+
 # Install Fail2ban and configure to guard SSH port (which is listening on 48101)
 sudo apt-get install fail2ban -y
 sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
@@ -50,8 +53,6 @@ sudo curl -o /home/et/etlegacy-v2.81.1-x86_64.sh https://www.etlegacy.com/downlo
 sudo chown et:et /home/et/etlegacy-v2.81.1-x86_64.sh
 sudo chmod a+x /home/et/etlegacy-v2.81.1-x86_64.sh
 
-# Install dependencies necessary to run the latest legacy version
-sudo apt-get install sudo openssh-server curl unzip screen dos2unix libstdc++6 libcurl4-gnutls-dev libjpeg-dev libogg-dev libvorbis-dev libopenal-dev libssl-dev libgtk2.0-dev -y
 
 
 #install the server using defaults and as ET user
