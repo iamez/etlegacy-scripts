@@ -17,7 +17,7 @@ sudo apt-get update
 sudo apt-get upgrade -y
 
 # Install dependencies necessary to run the latest legacy version
-sudo apt-get install sudo openssh-server curl unzip screen dos2unix libstdc++6 libcurl4-gnutls-dev libjpeg-dev libogg-dev libvorbis-dev libopenal-dev libssl-dev libgtk2.0-dev -y
+sudo apt-get install sudo openssh-server curl unzip screen dos2unix -y
 
 # Install Fail2ban and configure to guard SSH port (which is listening on 48101)
 sudo apt-get install fail2ban -y
@@ -29,11 +29,13 @@ sudo systemctl restart fail2ban.service
 #sudo sed -i 's/Port 22/Port 48101/g' /etc/ssh/sshd_config
 sudo sed -i -e 's/#Port 22/Port 48101/g' -e 's/Port 22/Port 48101/g' /etc/ssh/sshd_config
 
+
 # Create user 'et' and set default shell to bash
 sudo useradd -m -s /bin/bash et
-echo "et:qErtCmooSCH3bF4U" | sudo chpasswd
+password=$(openssl rand -base64 12)
 sudo usermod -aG sudo et
 sudo chown -R et:et /home/et
+echo "et:$password" | sudo chpasswd
 
 #setup directories and set permissions
 sudo -u et mkdir /home/et/etlegacy-v2.81.1-x86_64
@@ -54,7 +56,6 @@ sudo chown et:et /home/et/etlegacy-v2.81.1-x86_64.sh
 sudo chmod a+x /home/et/etlegacy-v2.81.1-x86_64.sh
 
 
-
 #install the server using defaults and as ET user
 yes | sudo -H -u et /bin/bash -c 'cd /home/et/ && ./etlegacy-v2.81.1-x86_64.sh'
 
@@ -65,7 +66,7 @@ sudo chmod -R 700 /home/et/etlegacy-v2.81.1-x86_64/
 # Download competitive configs from ET: Legacy Competitive GitHub repository Extract the contents of the archive Copy the contents to $ETMAIN_DIR
 sudo wget -q "https://github.com/ET-Legacy-Competitive/Legacy-Competition-League-Configs/archive/main.zip" -O "/tmp/main.zip"
 sudo unzip -q "/tmp/main.zip" -d "/tmp/"
-sudo cp -r "/tmp/Legacy-Competition-League-Configs-main/." "$ETMAIN_DIR/"
+sudo cp -r "/tmp/Legacy-Competition-League-Configs-main/." "$ETMAIN_DIR"
 sudo chown -R et:et "$ETMAIN_DIR"
 sudo chmod -R 700 "$ETMAIN_DIR"
 sudo rm -rf "/tmp/Legacy-Competition-League-Configs-main"
@@ -216,6 +217,7 @@ sleep 10
 cd $GAME_DIR
 bash etdaemon.sh &
 EOF
+
 # Set permissions for start.sh
 sudo chown et:et $DOMA/start.sh
 sudo chmod a+x $DOMA/start.sh
@@ -230,6 +232,8 @@ sudo chown et:et /home/et/start_servers.log
 
 # Start the server
 su - et -s /bin/bash -c "cd /home/et/etlegacy-v2.81.1-x86_64 && dos2unix etdaemon.sh && ./etdaemon.sh" &
-echo "ssh will now restart on port 48101"
-echo "SSH will now restart and open on 48101 port. Server IP address(es): $(hostname -I)"
+#echo "SSH will now listen on 48101 port. Server IP address(es): $(hostname -I)"
+echo "$(date '+%Y-%m-%d %H:%M:%S') - Password: $password, SSH Port: 48101, Server IP(s): $(hostname -I)" >> saved.log
+echo "Server IP(s): $(hostname -I) SSH LOGIN DETAILS - et:$password , wrote saved.log"
+
 sudo systemctl restart sshd.service
