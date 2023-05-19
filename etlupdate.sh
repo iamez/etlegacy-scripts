@@ -3,6 +3,9 @@
 # Set the path for the update log file
 update_log_file="${CURRENT_USER:-$HOME}/legacyupdate/backup/logs/update.log"
 backup_directory="${CURRENT_USER:-$HOME}/legacyupdate/backup"
+default_server_termination_command="screen -ls | grep -E \"(vektor|aim)\" | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit"
+default_game_directory="/home/et/etlegacy-v2.81.1-x86_64/"
+default_installation_file_path="${default_game_directory}/legacy/"
 
 # Check if necessary directories exist, create them if not
 [ ! -d "$backup_directory/logs" ] && mkdir -p "$backup_directory/logs"
@@ -19,17 +22,19 @@ tar -zxvf "$update_file" >> "$update_log_file" && \
 extracted_dir=$(find . -maxdepth 1 -type d -name "etlegacy-v*") >> "$update_log_file" && \
 cd "$extracted_dir" >> "$update_log_file"
 
-# Prompt the user to enter the command to terminate the running servers or use default value
-read -p "Enter the command to terminate the running servers (default: 'screen -ls | grep -E \"(vektor|aim)\" | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit'): " server_termination_command
-server_termination_command=${server_termination_command:-"screen -ls | grep -E \"(vektor|aim)\" | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit"}
+# Use default or prompt the user to enter the command to terminate the running servers
+read -p "Enter the command to terminate the running servers (default: '${default_server_termination_command}'): " server_termination_command
+server_termination_command=${server_termination_command:-"${default_server_termination_command}"}
 eval "$server_termination_command" >> "$update_log_file"
 sleep 3
 
-# Prompt the user to enter the game root directory or use default value
-read -p "Enter the game root directory (default: /home/et/etlegacy-v2.81.1-x86_64/): " game_directory
-game_directory=${game_directory:-"/home/et/etlegacy-v2.81.1-x86_64/"}
-read -p "Where is your /legacy/ folder (default: $game_directory/legacy/): " installation_file_path
-installation_file_path=${installation_file_path:-"$game_directory/legacy/"}
+# Use default or prompt the user to enter the game directory
+read -p "Enter the game root directory (default: '${default_game_directory}'): " game_directory
+game_directory=${game_directory:-"${default_game_directory}"}
+
+# Use default or prompt the user to enter the installation file path
+read -p "Where is your /legacy/ folder (default: '${default_installation_file_path}'): " installation_file_path
+installation_file_path=${installation_file_path:-"${default_installation_file_path}"}
 
 # Search for older snapshots and move them to the backup directory
 old_pk3_files=$(find "$installation_file_path" -name "legacy_v2.81.1-*.pk3" -print)
