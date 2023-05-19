@@ -1,29 +1,13 @@
 #!/bin/bash
 
 # Set the path for the update log file
-update_log_file="/home/et/legacyupdate/backup/logs/update.log"
-backup_directory="/home/et/legacyupdate/backup"
+update_log_file="${CURRENT_USER:-$HOME}/legacyupdate/backup/logs/update.log"
+backup_directory="${CURRENT_USER:-$HOME}/legacyupdate/backup"
 
 # Check if necessary directories exist, create them if not
-if [ ! -d "$backup_directory/logs" ]; then
-  mkdir -p "$backup_directory/logs"
-fi
-
-if [ ! -d "$backup_directory" ]; then
-  mkdir -p "$backup_directory"
-fi
-
-if [ ! -f "$update_log_file" ]; then
-  touch "$update_log_file"
-fi
-
-# Search for old legacy PK3 files and move them to the backup directory
-old_pk3_files=$(find /home/et/etlegacy-v2.81.1-x86_64/legacy/ -name "legacy_v2.81.1-*.pk3" -print)
-if [ -n "$old_pk3_files" ]; then
-  echo "Old legacy PK3 files:"
-  echo "$old_pk3_files"
-  mv $old_pk3_files "$backup_directory" >> "$update_log_file"
-fi
+[ ! -d "$backup_directory/logs" ] && mkdir -p "$backup_directory/logs"
+[ ! -d "$backup_directory" ] && mkdir -p "$backup_directory"
+[ ! -f "$update_log_file" ] && touch "$update_log_file"
 
 # Prompt the user to enter the update link, download and extract the update file
 read -p "Enter the update link: " update_link && \
@@ -35,25 +19,31 @@ tar -zxvf "$update_file" >> "$update_log_file" && \
 extracted_dir=$(find . -maxdepth 1 -type d -name "etlegacy-v*") >> "$update_log_file" && \
 cd "$extracted_dir" >> "$update_log_file"
 
+# Prompt the user to enter the command to terminate the running servers or use default value
+read -p "Enter the command to terminate the running servers (default: 'screen -ls | grep -E \"(vektor|aim)\" | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit'): " server_termination_command
+server_termination_command=${server_termination_command:-"screen -ls | grep -E \"(vektor|aim)\" | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit"}
+eval "$server_termination_command" >> "$update_log_file"
+sleep 3
 
-#Make sure you disable your ET-Service/Server's here
-#Terminate the running servers (vektor and aim)
-#Comment the next line out
+# Prompt the user to enter the game root directory or use default value
+read -p "Enter the game root directory (default: /home/et/etlegacy-v2.81.1-x86_64/): " game_directory
+game_directory=${game_directory:-"/home/et/etlegacy-v2.81.1-x86_64/"}
+read -p "Where is your /legacy/ folder (default: $game_directory/legacy/): " installation_file_path
+installation_file_path=${installation_file_path:-"$game_directory/legacy/"}
 
-screen -ls | grep -E "(vektor|aim)" | awk '{print $1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit >> "$update_log_file"
-sleep 10
+# Search for older snapshots and move them to the backup directory
+old_pk3_files=$(find "$installation_file_path" -name "legacy_v2.81.1-*.pk3" -print)
+[ -n "$old_pk3_files" ] && { echo "Old legacy PK3 files:"; echo "$old_pk3_files"; mv $old_pk3_files "$backup_directory" >> "$update_log_file"; }
 
 # Copy the contents of the update to the game directory
-# Change according to ur game dir!
-cp -r * /home/et/etlegacy-v2.81.1-x86_64/
-
+cp -r * "$game_directory"
 
 # Save logs to legacyupdate directory
 echo "$(date '+%Y-%m-%d %H:%M:%S') - Update completed successfully!" >> "$update_log_file"
 
 # Remove the downloaded update file and extracted directory
-cd "$backup_directory" >> "$update_log_file"
-rm "$update_file" >> "$update_log_file" 2>&1
+cd "$backup_directory" >> "$update_log_file" && \
+rm "$update_file" >> "$update_log_file" 2>&1 && \
 rm -rf "$extracted_dir" >> "$update_log_file" 2>&1
 
 # Print a message indicating the update was successful
