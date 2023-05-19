@@ -25,32 +25,28 @@ if [ -n "$old_pk3_files" ]; then
   mv $old_pk3_files "$backup_directory" >> "$update_log_file"
 fi
 
-# Prompt the user to enter the update link
-read -p "Enter the update link: " update_link
-echo "Update link: $update_link" >> "$update_log_file"
-
-# Go into backup directory
-cd "$backup_directory" >> "$update_log_file"
-
-# Download the update file
-wget "$update_link" >> "$update_log_file"
-
-# Extract the downloaded file
-update_file=$(find . -maxdepth 1 -type f -name "etlegacy-v*")
-tar -zxvf "$update_file" >> "$update_log_file"
-
-# Get the extracted directory name
-extracted_dir=$(find . -maxdepth 1 -type d -name "etlegacy-v*") >> "$update_log_file"
-
-# Navigate into the extracted directory
+# Prompt the user to enter the update link, download and extract the update file
+read -p "Enter the update link: " update_link && \
+echo "Update link: $update_link" >> "$update_log_file" && \
+cd "$backup_directory" >> "$update_log_file" && \
+wget "$update_link" >> "$update_log_file" && \
+update_file=$(find . -maxdepth 1 -type f -name "etlegacy-v*") && \
+tar -zxvf "$update_file" >> "$update_log_file" && \
+extracted_dir=$(find . -maxdepth 1 -type d -name "etlegacy-v*") >> "$update_log_file" && \
 cd "$extracted_dir" >> "$update_log_file"
 
-# Terminate the running servers (vektor and aim)
+
+#Make sure you disable your ET-Service/Server's here
+#Terminate the running servers (vektor and aim)
+#Comment the next line out
+
 screen -ls | grep -E "(vektor|aim)" | awk '{print $1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit >> "$update_log_file"
 sleep 10
 
 # Copy the contents of the update to the game directory
+# Change according to ur game dir!
 cp -r * /home/et/etlegacy-v2.81.1-x86_64/
+
 
 # Save logs to legacyupdate directory
 echo "$(date '+%Y-%m-%d %H:%M:%S') - Update completed successfully!" >> "$update_log_file"
