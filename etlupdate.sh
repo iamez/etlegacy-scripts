@@ -23,20 +23,20 @@ if [ -n "$old_pk3_files" ]; then
   echo "Old legacy PK3 files:"
   echo "$old_pk3_files"
   mv $old_pk3_files "$backup_directory" >> "$update_log_file"
-
 fi
 
 # Prompt the user to enter the update link
-read -p "Enter the update link: " update_link >> "$update_log_file"
+read -p "Enter the update link: " update_link
+echo "Update link: $update_link" >> "$update_log_file"
 
-# go into backup directory
+# Go into backup directory
 cd "$backup_directory" >> "$update_log_file"
 
 # Download the update file
 wget "$update_link" >> "$update_log_file"
 
-# Extract the downloaded
-update_file=$(ls *.tar.gz)
+# Extract the downloaded file
+update_file=$(find . -maxdepth 1 -type f -name "etlegacy-v*")
 tar -zxvf "$update_file" >> "$update_log_file"
 
 # Get the extracted directory name
@@ -55,5 +55,10 @@ cp -r * /home/et/etlegacy-v2.81.1-x86_64/
 # Save logs to legacyupdate directory
 echo "$(date '+%Y-%m-%d %H:%M:%S') - Update completed successfully!" >> "$update_log_file"
 
+# Remove the downloaded update file and extracted directory
+cd "$backup_directory" >> "$update_log_file"
+rm "$update_file" >> "$update_log_file" 2>&1
+rm -rf "$extracted_dir" >> "$update_log_file" 2>&1
+
 # Print a message indicating the update was successful
-echo "Update completed successfully!"
+echo "Update completed successfully!" >> "$update_log_file"
