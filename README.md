@@ -35,3 +35,6 @@ for switching between snapshots, this script performs the following steps:
 The script is interactive and prompts the user for input at various stages.
 It utilizes variables to store paths and commands, allowing customization. It also logs the update process to a log file for record-keeping purposes.
 
+abs1.3.lua
+this Lua script modifies the behavior of the game server by making specific changes when a client spawns in the game.
+It sets the player's power-ups and health, and adds weapons with high ammo and clip count.
