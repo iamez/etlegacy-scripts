@@ -1,3 +1,4 @@
+freshinstall.sh
 demo: https://youtu.be/ZPRiWAug4sI
 
 freshinstall.sh script is designed for use on a freshly installed Linux server. The script automates the installation of the et:legacy game server for multiplayer gaming, and it installs all of the necessary dependencies and packages to get the server up and running. Additionally, the script creates a background script that ensures the et:legacy server runs smoothly and without issue.
@@ -5,7 +6,8 @@ freshinstall.sh script is designed for use on a freshly installed Linux server. 
 It is important to note that the freshinstall.sh script should only be run once, as it is intended to automate the initial setup of the et:legacy server. Once the server is set up, the background script will continue to run and maintain the server's operation, and the user can forget about the initial installation process. Overall, the freshinstall.sh script is a useful tool for quickly and easily setting up an et:legacy game server on a Linux machine, and ensuring it runs smoothly over time.
 
 
-etdaemon.sh is a Bash script that automatically starts and manages two ET:L servers named "Vektor" and "Aim".
+etdaemon.sh
+is a Bash script that automatically starts and manages two ET:L servers named "Vektor" and "Aim".
 using freshinstall.sh will "install" the script for you.
 To use the script without freshinstall.sh, follow these steps:
 
@@ -18,3 +20,18 @@ Note that the script should be run as a background process and left running inde
 If you need to stop the servers, you can run the command "screen -S vektor -X quit" and "screen -S aim -X quit".
 The script logs its activity to /home/et/start_servers.log.
 to access the server's console either use "screen -R vektor" "screen -R aim" and "Ctrl+a+a+d" to detach the sessions.
+
+
+etlupdate.sh
+for switching between snapshots, this script performs the following steps:
+
+    Downloads and extracts an update file for the game server.
+    Terminates the running game servers.
+    Moves older files to a backup directory.
+    Copies the updated files to the game directory.
+    Logs the update information.
+    Cleans up by removing temporary files.
+
+The script is interactive and prompts the user for input at various stages.
+It utilizes variables to store paths and commands, allowing customization. It also logs the update process to a log file for record-keeping purposes.
+
