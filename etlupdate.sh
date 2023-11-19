@@ -1,13 +1,9 @@
 #!/bin/bash
 
-#default server termination command only works if you have vektor&aim screen sessions, you need to stop the server before updating.
-#"pkill etlded" command could work for everyone
-# Set the path for the update_log_file
-#default game directory is where the etlded is
-#instalation file path for mod legacy
+# Set the path for the update log file
 update_log_file="${CURRENT_USER:-$HOME}/legacyupdate/backup/logs/update.log"
 backup_directory="${CURRENT_USER:-$HOME}/legacyupdate/backup"
-default_server_termination_command="screen -ls | grep -E \"(vektor|aim)\" | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit"
+default_server_termination_command="screen -ls | grep -E '(vektor|aim)' | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit"
 default_game_directory="/home/et/etlegacy-v2.81.1-x86_64"
 default_installation_file_path="${default_game_directory}/legacy/"
 
@@ -17,8 +13,6 @@ default_installation_file_path="${default_game_directory}/legacy/"
 [ ! -f "$update_log_file" ] && touch "$update_log_file"
 
 # Prompt the user to enter the update link, download and extract the update file
-# for example: https://www.etlegacy.com/workflow-files/dl/337f96208f5e411b24afc7e1f7cc29d5769d5e8a/lnx64/etlegacy-v2.81.1-66-g337f962-x86_64.tar.gz
-# only use *.tar.gz files from trusted source
 read -p "Enter the update link: " update_link && \
 echo "Update link: $update_link" >> "$update_log_file" && \
 cd "$backup_directory" >> "$update_log_file" && \
@@ -28,21 +22,16 @@ tar -zxvf "$update_file" >> "$update_log_file" && \
 extracted_dir=$(find . -maxdepth 1 -type d -name "etlegacy-v*") >> "$update_log_file" && \
 cd "$extracted_dir" >> "$update_log_file"
 
-
-# Use default or prompt the user to enter the command to terminate the running servers
-read -p "To proceed with the update, please stop the 'etlded' servers. If you are unsure how to do this, you can use the command 'pkill etlded' to terminate them.
-
-Enter the command to terminate the running servers (recommended: 'pkill etlded', default: '${default_server_termination_command}'): " server_termination_command
-
-server_termination_command=${server_termination_command:-"${default_server_termination_command}"}
+# Terminate running servers
+server_termination_command=${default_server_termination_command}
 eval "$server_termination_command" >> "$update_log_file"
 sleep 3
 
-# Use default or prompt the user to enter the game directory
+# Prompt the user to enter the game directory
 read -p "Enter the game root directory (default: '${default_game_directory}'): " game_directory
 game_directory=${game_directory:-"${default_game_directory}"}
 
-# Use default or prompt the user to enter the installation file path
+# Prompt the user to enter the installation file path
 read -p "Where is your /legacy/ folder (default: '${default_installation_file_path}'): " installation_file_path
 installation_file_path=${installation_file_path:-"${default_installation_file_path}"}
 
@@ -65,6 +54,14 @@ if [ -n "$new_pk3_files" ]; then
   echo "Update completed successfully!"
   echo "Updated from version ${old_pk3_files##*/} to ${new_pk3_files##*/}"
   echo "Update from ${old_pk3_files##*/} to ${new_pk3_files##*/}" >> "$update_log_file"
+
+  # Copy new_pk3_files to Apache server directory
+  for file in $new_pk3_files; do
+    if [ -e "$file" ]; then
+      sudo cp "$file" "/var/www/html/legacy/"
+      sudo chown fastdl:fastdl "/var/www/html/legacy/${file##*/}"
+    fi
+  done
 else
   echo "No update was performed."
 fi
