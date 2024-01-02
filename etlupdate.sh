@@ -1,7 +1,18 @@
 #!/bin/bash
 
+# Function for handling errors
+handle_error() {
+  echo "Error: $1"
+  exit 1
+}
+
+# Function for logging messages to the update log
+log_message() {
+  echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$update_log_file"
+}
+
 # Set the path for the update log file
-update_log_file="${CURRENT_USER:-$HOME}/legacyupdate/backup/logs/update.log"
+update_log_file="${CURRENT_USER:-$HOME}/legacyupdate/backup/logs/update_$(date).log"
 backup_directory="${CURRENT_USER:-$HOME}/legacyupdate/backup"
 default_server_termination_command="screen -ls | grep -E '(vektor|aim)' | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit"
 default_game_directory="/home/et/etlegacy-v2.81.1-x86_64"
@@ -12,19 +23,22 @@ default_installation_file_path="${default_game_directory}/legacy/"
 [ ! -d "$backup_directory" ] && mkdir -p "$backup_directory"
 [ ! -f "$update_log_file" ] && touch "$update_log_file"
 
+# Create a new log file
+log_message "Starting update process..."
+
 # Prompt the user to enter the update link, download and extract the update file
 read -p "Enter the update link: " update_link && \
-echo "Update link: $update_link" >> "$update_log_file" && \
-cd "$backup_directory" >> "$update_log_file" && \
-wget "$update_link" >> "$update_log_file" && \
+log_message "Update link: $update_link" && \
+cd "$backup_directory" && \
+wget "$update_link" && \
 update_file=$(find . -maxdepth 1 -type f -name "etlegacy-v*") && \
-tar -zxvf "$update_file" >> "$update_log_file" && \
-extracted_dir=$(find . -maxdepth 1 -type d -name "etlegacy-v*") >> "$update_log_file" && \
-cd "$extracted_dir" >> "$update_log_file"
+tar -zxvf "$update_file" >> "$update_log_file" 2>&1 && \
+extracted_dir=$(find . -maxdepth 1 -type d -name "etlegacy-v*") && \
+cd "$extracted_dir"
 
 # Terminate running servers
 server_termination_command=${default_server_termination_command}
-eval "$server_termination_command" >> "$update_log_file"
+eval "$server_termination_command"
 sleep 3
 
 # Prompt the user to enter the game directory
@@ -40,6 +54,12 @@ old_pk3_files=$(find "$installation_file_path" -name "legacy_v2.81.1-*.pk3" -pri
 if [ -n "$old_pk3_files" ]; then
   echo "Old legacy PK3 files:"
   echo "$old_pk3_files"
+
+  # Append old_pk3_files information to the main update log file
+  echo "Old legacy PK3 files:" >> "$update_log_file"
+  echo "$old_pk3_files" >> "$update_log_file"
+
+  # Move old_pk3_files to backup directory
   mv $old_pk3_files "$backup_directory" >> "$update_log_file"
 fi
 
@@ -51,25 +71,30 @@ new_pk3_files=$(find "$game_directory" -name "legacy_v2.81.1-*.pk3" -print)
 
 # Print a message indicating the update was successful
 if [ -n "$new_pk3_files" ]; then
-  echo "Update completed successfully!"
-  echo "Updated from version ${old_pk3_files##*/} to ${new_pk3_files##*/}"
-  echo "Update from ${old_pk3_files##*/} to ${new_pk3_files##*/}" >> "$update_log_file"
+  log_message "Update completed successfully!"
+
+  # Get the updated version from the first file in the list
+  updated_version=$(echo "${new_pk3_files%%$'\n'*}" | awk -F'legacy_v2.81.1-' '{print $2}' | cut -d'.' -f1-3)
+
+  log_message "Updated to version: $updated_version"
+  echo "Updated to version: $updated_version from $old_pk3_files " >> "$update_log_file"
 
   # Copy new_pk3_files to Apache server directory
   for file in $new_pk3_files; do
     if [ -e "$file" ]; then
-      sudo cp "$file" "/var/www/html/legacy/"
-      sudo chown fastdl:fastdl "/var/www/html/legacy/${file##*/}"
+      cp "$file" "/var/www/html/legacy/"
     fi
   done
 else
-  echo "No update was performed."
+  log_message "No update was performed."
 fi
 
 # Save logs to legacyupdate directory
-echo "$(date '+%Y-%m-%d %H:%M:%S') - Update completed successfully!" >> "$update_log_file"
+log_message "Update process finished."
+log_message "------------------------------------"
 
 # Remove the downloaded update file and extracted directory
-cd "$backup_directory" >> "$update_log_file" && \
-rm "$update_file" >> "$update_log_file" 2>&1 && \
-rm -rf "$extracted_dir" >> "$update_log_file" 2>&1
+cd "$backup_directory" && \
+rm "$update_file" >> "$update_log_file" 2>&1 || handle_error "Failed to remove the downloaded update file."
+rm -rf "$extracted_dir" >> "$update_log_file" 2>&1 || handle_error "Failed to remove the extracted directory."
+
