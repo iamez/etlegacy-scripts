@@ -45,7 +45,7 @@ sleep 3
 read -p "Enter the game root directory (default: '${default_game_directory}'): " game_directory
 game_directory=${game_directory:-"${default_game_directory}"}
 
-# Prompt the user to enter the installation file path
+# Where is /legacy/
 read -p "Where is your /legacy/ folder (default: '${default_installation_file_path}'): " installation_file_path
 installation_file_path=${installation_file_path:-"${default_installation_file_path}"}
 
@@ -77,7 +77,7 @@ if [ -n "$new_pk3_files" ]; then
   updated_version=$(echo "${new_pk3_files%%$'\n'*}" | awk -F'legacy_v2.81.1-' '{print $2}' | cut -d'.' -f1-3)
 
   log_message "Updated to version: $updated_version"
-  echo "Updated to version: $updated_version from $old_pk3_files " >> "$update_log_file"
+  echo "Updated to version: $new_pk3_files from $old_pk3_files "
 
   # Copy new_pk3_files to Apache server directory
   for file in $new_pk3_files; do
