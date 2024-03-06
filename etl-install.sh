@@ -85,6 +85,22 @@ chmod a+x "$ABS_LUA_FILE"
 chown "$USER:$USER" "$GAME_DIR/etdaemon2.sh"
 sed -i -e "s#^GAME_DIR=\".*\"#GAME_DIR=\"$GAME_DIR\"#" -e 's/\r//' "$GAME_DIR/etdaemon2.sh"
 
+# Download endstats.lua and c0rnp0rn.lua
+sudo -u "$USER" curl -sSfL "https://raw.githubusercontent.com/iamez/etlegacy-scripts/main/endstats.lua" -o "${installed_version_directory}/legacy/endstats.lua"
+sudo -u "$USER" curl -sSfL "https://raw.githubusercontent.com/iamez/etlegacy-scripts/main/c0rnp0rn.lua" -o "${installed_version_directory}/legacy/c0rnp0rn.lua"
+sudo chown "$USER:$USER" "${installed_version_directory}/legacy/endstats.lua"
+sudo chown "$USER:$USER" "${installed_version_directory}/legacy/c0rnp0rn.lua"
+sudo chmod 700 "${installed_version_directory}/legacy/endstats.lua"
+sudo chmod 700 "${installed_version_directory}/legacy/c0rnp0rn.lua"
+
+# Replace etl_supply entry in configs
+sed -i '/^map etl_supply/,/^}/s/set g_userTimeLimit "12"/set g_userTimeLimit "15"\n\tcommand "sv_cvar r_drawfoliage EQ 0"\n/' "${installed_version_directory}/etmain/configs/"*config
+
+# Update lua_modules configurations
+sed -i '/setl lua_modules/s/"$/endstats.lua c0rnp0rn.lua"/' "${installed_version_directory}/etmain/configs/"*config
+
+
+
 # Download all "official" competitive maps, and some other popular maps.
 files=(
     "aimmap3.pk3"
