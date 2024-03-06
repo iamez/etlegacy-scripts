@@ -9,11 +9,11 @@
 
 # Define version variables
 etlegacy_version="2.82.0"  # Update this for the desired version
-default_game_directory="/home/et/etlegacy-v${etlegacy_version}-x86_64"
+default_game_directory="$HOME/etlegacy-v${etlegacy_version}-x86_64"
 default_installation_file_path="${default_game_directory}/legacy/"
 
-update_log_file="${CURRENT_USER:-$HOME}/legacyupdate/backup/logs/update.log"
-backup_directory="${CURRENT_USER:-$HOME}/legacyupdate/backup"
+update_log_file="$HOME/legacyupdate/backup/logs/update.log"
+backup_directory="$HOME/legacyupdate/backup"
 default_server_termination_command="screen -ls | grep -E \"(vektor|aim)\" | awk '{print \$1}' | cut -d. -f1 | xargs -I{} screen -X -S {} quit"
 
 # Check if necessary directories exist, create them if not
