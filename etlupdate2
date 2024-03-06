@@ -8,7 +8,7 @@
 # Installation file path for mod legacy
 
 # Define version variables
-etlegacy_version="2.82"  # Update this for the desired version
+etlegacy_version="2.82.0"  # Update this for the desired version
 default_game_directory="/home/et/etlegacy-v${etlegacy_version}-x86_64"
 default_installation_file_path="${default_game_directory}/legacy/"
 
