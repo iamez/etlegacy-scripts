@@ -103,7 +103,8 @@ sudo chown "$USER:$USER" "$ABS_LUA_FILE"
 sudo chmod a+x "$ABS_LUA_FILE"
 
 # Download etdaemon2.sh and move it to the game directory
-curl https://github.com/iamez/etlegacy-scripts/blob/main/etdaemon2.sh > "$GAME_DIR/etdaemon2.sh"
+curl https://raw.githubusercontent.com/iamez/etlegacy-scripts/main/etdaemon2.sh > "$GAME_DIR/etdaemon2.sh"
+
 chmod a+x "$GAME_DIR/etdaemon2.sh"
 chmod a+x "$ABS_LUA_FILE"
 chown "$USER:$USER" "$GAME_DIR/etdaemon2.sh"
@@ -224,4 +225,4 @@ sudo touch "/home/$USER/start_servers.log"
 sudo chown "$USER:$USER" "/home/$USER/start_servers.log"
 
 # Start the server dynamically with the latest version (new updated)
-su - et -s /bin/bash -c "cd ${installed_version_directory} && dos2unix etdaemon2.sh && ./etdaemon2.sh" &
+/bin/bash -c "cd ${installed_version_directory} && ./etdaemon2.sh" &
