@@ -171,8 +171,7 @@ num_downloaded=0
 num_skipped=0
 num_failed=0
 
-for file in "${files[@]}"
-do
+for file in "${files[@]}"; do
     if [ -e "${ETMAIN_DIR}/${file}" ]; then
         echo "${file} already exists in ${ETMAIN_DIR} and will be skipped"
         ((num_skipped++))
@@ -190,17 +189,20 @@ do
         if sudo wget -q "$link" -O "$ETMAIN_DIR/${file}"; then
             downloaded=true
             ((num_downloaded++))
-            break
+            break  # Break out of the loop once the file is successfully downloaded
         fi
     done
+
     if ! $downloaded; then
         echo "${file} not found and skipped"
         ((num_failed++))
         continue
     fi
+
     sudo chown "$USER:$USER" "${ETMAIN_DIR}/${file}"
     sudo chmod 700 "${ETMAIN_DIR}/${file}"
 done
+
 
 echo "Downloaded ${num_downloaded} files. Skipped ${num_skipped} files that already exist. Failed to download ${num_failed} files"
 
