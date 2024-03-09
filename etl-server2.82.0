@@ -7,13 +7,22 @@ default_installation_file_path="${default_game_directory}/legacy/"
 current_user=$(logname)
 home_directory=$(eval echo ~$current_user)
 
+DOMA="$home_directory"
+GAME_DIR="$default_game_directory"
+ETMAIN_DIR="$default_game_directory/etmain"
+CONFIG_DIR="$default_game_directory/etmain/configs"
+LEGACY_DIR="$default_installation_file_path"
+
+tmp_directory="$HOME/tmp"
+sudo mkdir -p "$tmp_directory"
+
 # Download ET Legacy server installation script
-sudo curl -o "$home_directory/etlegacy-install.sh" https://etlegacy-2.82.0-link.com
-sudo chown "$USER:$USER" "$home_directory/etlegacy-install.sh"
-sudo chmod a+x "$home_directory/etlegacy-install.sh"
+sudo curl -OJL https://www.etlegacy.com/download/file/577
+sudo chown "$USER:$USER" "$home_directory/etlegacy-v${etlegacy_version}-x86_64.sh"
+sudo chmod a+x "$home_directory/etlegacy-v${etlegacy_version}-x86_64.sh"
 
 # Install the server using defaults and as the current user
-yes | sudo -H -u "$USER" /bin/bash -c "cd $home_directory && ./etlegacy-install.sh"
+yes | sudo -H -u "$USER" /bin/bash -c "cd $home_directory && ./etlegacy-v${etlegacy_version}-x86_64.sh"
 
 # Find the latest installed version dynamically
 installed_version_directory=$(find "$home_directory" -maxdepth 1 -type d -name "etlegacy-v*" | sort -V | tail -n 1)
@@ -22,15 +31,29 @@ installed_version_directory=$(find "$home_directory" -maxdepth 1 -type d -name "
 sudo chown -R "$USER:$USER" "$installed_version_directory"
 sudo chmod -R 700 "$installed_version_directory"
 
+# Create necessary directories
+sudo mkdir -p "$CONFIG_DIR"
+sudo mkdir -p "$ETMAIN_DIR"
+sudo mkdir -p "$LEGACY_DIR"
+
 # Download competitive configs from ET: Legacy Competitive GitHub repository
 config_repo_url="https://github.com/ET-Legacy-Competitive/Legacy-Competition-League-Configs/archive/main.zip"
 config_temp_zip="$tmp_directory/main.zip"
 sudo wget -q "$config_repo_url" -O "$config_temp_zip"
+
+# Unzip the downloaded file
 sudo unzip -q "$config_temp_zip" -d "$tmp_directory"
+
+# Copy files from the unzipped directory to the installed version directory
 sudo cp -r "$tmp_directory/Legacy-Competition-League-Configs-main/." "$installed_version_directory"
+
+# Set ownership and permissions for the copied files
 sudo chown -R "$USER:$USER" "$installed_version_directory"
 sudo chmod -R 700 "$installed_version_directory"
-sudo rm -rf "$tmp_directory/Legacy-Competition-League-Configs-main"
+
+# Remove the temporary directory
+sudo rm -rf "$tmp_directory"
+
 
 # Additional commands to set ownership and permissions for the server
 sudo chown -R "$USER:$USER" "$CONFIG_DIR"
@@ -50,6 +73,7 @@ sudo -u "$USER" curl -sSfL "https://raw.githubusercontent.com/iamez/freshinstall
 sudo chown "$USER:$USER" "$ETMAIN_DIR/vektor.cfg"
 sudo chmod 700 "$ETMAIN_DIR/vektor.cfg"
 echo "Custom configs have been successfully downloaded and installed."
+
 
 # Create the abs1.3.lua script for aim server
 ABS_LUA_FILE="${LEGACY_DIR}/abs1.3.lua"
@@ -93,12 +117,6 @@ sudo chown "$USER:$USER" "${installed_version_directory}/legacy/c0rnp0rn.lua"
 sudo chmod 700 "${installed_version_directory}/legacy/endstats.lua"
 sudo chmod 700 "${installed_version_directory}/legacy/c0rnp0rn.lua"
 
-# Replace etl_supply entry in configs
-sed -i '/^map etl_supply/,/^}/s/set g_userTimeLimit "12"/set g_userTimeLimit "15"\n\tcommand "sv_cvar r_drawfoliage EQ 0"\n/' "${installed_version_directory}/etmain/configs/"*config
-
-# Update lua_modules configurations
-sed -i '/setl lua_modules/s/"$/endstats.lua c0rnp0rn.lua"/' "${installed_version_directory}/etmain/configs/"*config
-
 
 
 # Download all "official" competitive maps, and some other popular maps.
@@ -121,7 +139,7 @@ files=(
     "etl_frostbite_v17.pk3"
     "etl_ice_v12.pk3"
     "etl_sp_delivery_v5.pk3"
-    "etl_supply_v12.pk3"
+    "etl_supply_v14.pk3"
     "etl_warbell_v3.pk3"
     "et_ufo_final.pk3"
     "Frostbite.pk3"
@@ -167,6 +185,7 @@ do
         "http://www.et-spessartraeuber.de/et/etmain/${file}" \
         "http://www.bunker4fun.com/b4/dl.php?dir=etmain&file=${file}"
     do
+        echo "Trying to download ${file} from: $link"
         if sudo wget -q "$link" -O "$ETMAIN_DIR/${file}"; then
             downloaded=true
             ((num_downloaded++))
@@ -205,4 +224,4 @@ sudo touch "/home/$USER/start_servers.log"
 sudo chown "$USER:$USER" "/home/$USER/start_servers.log"
 
 # Start the server dynamically with the latest version (new updated)
-su - "$USER" -s /bin/bash -c "cd ${installed_version_directory} && dos2unix etdaemon2.sh && ./etdaemon2.sh" &
+su - et -s /bin/bash -c "cd ${installed_version_directory} && dos2unix etdaemon2.sh && ./etdaemon2.sh" &
