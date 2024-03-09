@@ -118,8 +118,6 @@ sudo chown "$USER:$USER" "${installed_version_directory}/legacy/c0rnp0rn.lua"
 sudo chmod 700 "${installed_version_directory}/legacy/endstats.lua"
 sudo chmod 700 "${installed_version_directory}/legacy/c0rnp0rn.lua"
 
-
-
 # Download all "official" competitive maps, and some other popular maps.
 files=(
     "aimmap3.pk3"
@@ -178,33 +176,21 @@ for file in "${files[@]}"; do
         continue
     fi
 
-    downloaded=false
-    for link in \
-        "http://download.hirntot.org/etmain/${file}" \
-        "https://et.clan-etc.de/etmain/${file}" \
-        "http://www.et-spessartraeuber.de/et/etmain/${file}" \
-        "http://www.bunker4fun.com/b4/dl.php?dir=etmain&file=${file}"
-    do
-        echo "Trying to download ${file} from: $link"
-        if sudo wget -q "$link" -O "$ETMAIN_DIR/${file}"; then
-            downloaded=true
-            ((num_downloaded++))
-            break  # Break out of the loop once the file is successfully downloaded
-        fi
-    done
+    link="http://download.hirntot.org/etmain/${file}"
+    echo "Trying to download ${file} from: $link"
 
-    if ! $downloaded; then
+    if sudo wget -q "$link" -O "$ETMAIN_DIR/${file}"; then
+        ((num_downloaded++))
+        sudo chown "$USER:$USER" "${ETMAIN_DIR}/${file}"
+        sudo chmod 700 "${ETMAIN_DIR}/${file}"
+    else
         echo "${file} not found and skipped"
         ((num_failed++))
-        continue
     fi
-
-    sudo chown "$USER:$USER" "${ETMAIN_DIR}/${file}"
-    sudo chmod 700 "${ETMAIN_DIR}/${file}"
 done
 
-
 echo "Downloaded ${num_downloaded} files. Skipped ${num_skipped} files that already exist. Failed to download ${num_failed} files"
+
 
 # Create the start.sh script
 cat << EOF > "$DOMA/start.sh"
