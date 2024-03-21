@@ -1,6 +1,4 @@
-local version = 1.0
-local modname = "endstats"
-
+-- endstats.lua by x0rnn, shows some interesting game statistics at the end of a round (most kill assists, most kill steals, most headshot kills, highest light weapon acc, highest hs acc, most dynamites planted, most pistol kills, kill/death stats vs. all opponents, etc.)
 
 killing_sprees = {}
 death_sprees = {}
@@ -135,23 +133,25 @@ function hitType(clientNum)
 end
 
 function et_Damage(target, attacker, damage, damageFlags, meansOfDeath)
-	if target ~= attacker and attacker ~= 1022 and attacker ~= 1023 then
-		if has_value(light_weapons, meansOfDeath) or has_value(explosives, meansOfDeath) then
-			local v_team = et.gentity_get(target, "sess.sessionTeam")
-			local k_team = et.gentity_get(attacker, "sess.sessionTeam")
-			local v_health = et.gentity_get(target, "health")
-			local hitType = hitType(attacker)
-			if hitType == HR_HEAD then
-				if not has_value(explosives, meansOfDeath) then
-					hitters[target][et.trap_Milliseconds()] = {[1]=attacker, [2]=damage, [3]=meansOfDeath}
-					if v_team ~= k_team then
-						if damage >= v_health then
-							topshots[attacker][31] = topshots[attacker][31] + 1
+	if gamestate == 0 then
+		if target ~= attacker and attacker ~= 1022 and attacker ~= 1023 and not (tonumber(target) < 0) and not (tonumber(target) > tonumber(et.trap_Cvar_Get("sv_maxclients"))) then
+			if has_value(light_weapons, meansOfDeath) or has_value(explosives, meansOfDeath) then
+				local v_team = et.gentity_get(target, "sess.sessionTeam")
+				local k_team = et.gentity_get(attacker, "sess.sessionTeam")
+				local v_health = et.gentity_get(target, "health")
+				local hitType = hitType(attacker)
+				if hitType == HR_HEAD then
+					if not has_value(explosives, meansOfDeath) then
+						hitters[target][et.trap_Milliseconds()] = {[1]=attacker, [2]=damage, [3]=meansOfDeath}
+						if v_team ~= k_team then
+							if damage >= v_health then
+								topshots[attacker][31] = topshots[attacker][31] + 1
+							end
 						end
 					end
+				else
+					hitters[target][et.trap_Milliseconds()] = {[1]=attacker, [2]=damage, [3]=meansOfDeath}
 				end
-			else
-				hitters[target][et.trap_Milliseconds()] = {[1]=attacker, [2]=damage, [3]=meansOfDeath}
 			end
 		end
 	end
@@ -225,11 +225,7 @@ function topshots_f(id)
 			-- kills per minute
 			if k > 10 then
 				local kpm = 0
-				if eomaptime == 0 then
-					kpm = k/(((et.trap_Milliseconds() - timeplayed)/1000)/60)
-				else
-					kpm = k/(((eomaptime - timeplayed)/1000)/60)
-				end
+				kpm = k/((timeplayed/1000)/60)
 				if kpm > max[8] then
 					max[8] = kpm
 					max_id[8] = i
@@ -412,11 +408,7 @@ function topshots_f(id)
 			--damage per minute
 			if dg > 1400 then
 				local dpm = 0
-				if eomaptime == 0 then
-					dpm = dg/(((et.trap_Milliseconds() - timeplayed)/1000)/60)
-				else
-					dpm = dg/(((eomaptime - timeplayed)/1000)/60)
-				end
+				dpm = dg/((timeplayed/1000)/60)
 				if dpm > max[42] then
 					max[42] = dpm
 					max_id[42] = i
