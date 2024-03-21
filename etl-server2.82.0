@@ -58,7 +58,7 @@ sudo chmod 700 "${installed_version_directory}/legacy/endstats.lua"
 sudo chmod 700 "${installed_version_directory}/legacy/c0rnp0rn.lua"
 
 # Update lua_modules configurations
-sed -i 's/\(setl lua_modules.*\) "\$/\1/" endstats.lua c0rnp0rn.lua"/' "${default_game_directory}/etmain/configs/"*config
+sed -i 's/\(setl lua_modules.*\) "$/ \1 endstats.lua c0rnp0rn.lua"/' "${default_game_directory}/etmain/configs/"*config
 
 # Update maxfps value
 sed -i 's/command "sv_cvar com_maxfps IN 40 250"/command "sv_cvar com_maxfps IN 40 500"/' "${default_game_directory}/etmain/configs/"*config
@@ -162,3 +162,4 @@ sudo touch "/home/$USER/start_servers.log"
 sudo chown "$USER:$USER" "/home/$USER/start_servers.log"
 
 /bin/bash -c "cd ${installed_version_directory} && ./etdaemon2.sh" &
+
