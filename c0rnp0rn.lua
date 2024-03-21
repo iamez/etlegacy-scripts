@@ -1,4 +1,4 @@
-local modname = "c0rnsp0rn"
+local modname = "c0rnp0rn2"
 local version = "1.0"
 
 -- local constants
@@ -73,16 +73,6 @@ end
 function roundNum(num, n)
 	local mult = 10^(n or 0)
 	return math.floor(num * mult + 0.5) / mult
-end
-
-local function getMatchID(matchIDPath)
-	print(matchIDPath)
-    local matchFile = assert(io.open(matchIDPath, "rb")) -- r read mode and b binary mode
-    if not matchFile then return 0 end
-	-- Use "a" in Lua 5.3; "*a" in Lua 5.1 and 5.2
-    local matchID = assert(matchFile:read(_VERSION <= "Lua 5.2" and "*a" or "a"))
-    matchFile:close()
-    return matchID
 end
 
 -- char *G_createStats(gentity_t *ent) g_match.c
@@ -163,19 +153,17 @@ function StoreStats()
 				end
 				
 				stats[guid] = string.format("%s\\%s\\%d\\%d\\%d%s", string.sub(guid, 1, 8), name, rounds, team, dwWeaponMask, weaponStats)
-				stats[guid] = string.format("%s %d %d %d %d %d %d %d %d %0.1f %d %d %d %d %d %d %d %d %d %d %d %d %0.1f %0.1f %0.1f %d %0.1 %d %d %d %d %d %d\n", stats[guid], damageGiven, damageReceived, teamDamageGiven, teamDamageReceived, gibs, selfkills, teamkills, teamgibs, timePlayed, xp, topshots[i][1], topshots[i][2], topshots[i][3], topshots[i][4], topshots[i][5], topshots[i][6], topshots[i][7], topshots[i][8], topshots[i][9], topshots[i][10], topshots[i][11], topshots[i][12], topshots[i][13], topshots[i][14], roundNum((death_time_total[i] / 60000), 2), kd, topshots[i][15], multikills[i][1], multikills[i][2], multikills[i][3], multikills[i][4], multikills[i][5])
+				stats[guid] = string.format("%s %d %d %d %d %d %d %d %d %0.1f %d %d %d %d %d %d %d %d %d %d %d %d %0.1f %0.1f %0.1f %0.1f %0.1f %d %d %d %d %d %d\n", stats[guid], damageGiven, damageReceived, teamDamageGiven, teamDamageReceived, gibs, selfkills, teamkills, teamgibs, timePlayed, xp, topshots[i][1], topshots[i][2], topshots[i][3], topshots[i][4], topshots[i][5], topshots[i][6], topshots[i][7], topshots[i][8], topshots[i][9], topshots[i][10], topshots[i][11], topshots[i][12], topshots[i][13], topshots[i][14], roundNum((death_time_total[i] / 60000), 2), kd, topshots[i][15], multikills[i][1], multikills[i][2], multikills[i][3], multikills[i][4], multikills[i][5])
 			end
 		end
 	end
 end
 
 function SaveStats()
-	local statsPath = "/home/puran/etlegacy-v2.81.1-x86_64/legacy/gamestats/"
-	local matchIDFile   = "matchid.txt"
-	local matchID 	   = getMatchID(statsPath .. matchIDFile)
+	local statsPath = "/home/et/etlegacy-v2.82.0-x86_64/legacy/gamestats/"
 	local mapname      = et.Info_ValueForKey(et.trap_GetConfigstring(et.CS_SERVERINFO), "mapname")
 	local round        = tonumber(et.trap_Cvar_Get("g_currentRound")) == 0 and 2 or 1
-	local fileName     = string.format("gamestats\\%s-%s%s-round-%d.txt", matchID, os.date('%Y-%m-%d-%H%M%S-'), mapname, round)
+	local fileName     = string.format("gamestats\\%s%s-round-%d.txt", os.date('%Y-%m-%d-%H%M%S-'), mapname, round)
 	
 	
 	-- header data
@@ -185,7 +173,7 @@ function SaveStats()
 	local winnerteam    = tonumber(isEmpty(et.Info_ValueForKey(et.trap_GetConfigstring(et.CS_MULTI_MAPWINNER), "w"))) + 1 -- change from scripting value for winner (0==AXIS, 1==ALLIES) to spawnflag value
 	local timelimit     = ConvertTimelimit(et.trap_Cvar_Get("timelimit"))
 	local nextTimeLimit = ConvertTimelimit(et.trap_Cvar_Get("g_nextTimeLimit"))
-	local header        = string.format("%s\\%s\\%s\\%d\\%d\\%d\\%s\\%s\\%s\n", servername, mapname, config, round, defenderteam, winnerteam, timelimit, nextTimeLimit, matchID)
+	local header        = string.format("%s\\%s\\%s\\%d\\%d\\%d\\%s\\%s\n", servername, mapname, config, round, defenderteam, winnerteam, timelimit, nextTimeLimit)
 
 	local fileHandle = et.trap_FS_FOpenFile(fileName, et.FS_WRITE)
 	et.trap_FS_Write(header, string.len(header), fileHandle);
@@ -561,7 +549,7 @@ function et_ClientDisconnect(id)
 end
 
 function et_Damage(target, attacker, damage, damageFlags, meansOfDeath)
-	if target ~= attacker and attacker ~= 1022 and attacker ~= 1023 then
+	if target ~= attacker and attacker ~= 1022 and attacker ~= 1023 and not (tonumber(target) < 0) and not (tonumber(target) > tonumber(et.trap_Cvar_Get("sv_maxclients"))) then
 		if has_value(light_weapons, meansOfDeath) or has_value(explosives, meansOfDeath) then
 			local v_team = et.gentity_get(target, "sess.sessionTeam")
 			local k_team = et.gentity_get(attacker, "sess.sessionTeam")
